@@ -6,5 +6,18 @@
 
 module.exports = {
   /* Your site config here */
-  plugins: [],
+  siteMetadata: {
+    title: 'Camel_y'
+  },
+  plugins: [
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        name: `src`,
+        path: `${__dirname}/content/`,
+      },
+    },
+    `gatsby-transformer-remark`,
+    `gatsby-plugin-emotion`
+  ],
 }
