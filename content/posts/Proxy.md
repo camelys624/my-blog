@@ -99,3 +99,36 @@ let obj = new Proxy({}, {
     }
 })
 ```
+
+```js
+let express = require('express');
+const path = require('path');
+let app = express();
+
+app.use('/nova/hydra/', express.static('dist/hydra'))
+app.use(express.static('dist/my-app'))
+
+
+
+app.get('/ssoLogin', (req, res) => {
+  res.cookie('email', req.headers.host);
+  res.status(302).redirect('/sso');
+})
+
+app.get('*', (req, res, next) => {
+  if (/\/nova\/hydra/.test(req.url)){
+    res.sendFile(path.join(__dirname,'..', 'dist/hydra/index.html'), {immutable: true});
+  } else {
+    res.sendFile(path.join(__dirname, '..', 'dist/my-app/index.html'), {immutable: true});
+  }
+
+  if (req.url === '/ssoLogin') {
+    next();
+  }
+})
+
+app.listen(3003, function (){
+  console.log(`app listening at http://localhost:3003`);
+})
+
+```
