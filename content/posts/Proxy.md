@@ -134,7 +134,7 @@ function createArray(...elements) {
       if (index < 0) {
           propKey = String(target.length + index);
       }
-      return Reflect.get(target, propKey, receiver);
+      return Reflect.get(target, propKey, receiver); 
     }
   }
 
@@ -172,6 +172,94 @@ var pow = n => n * n;
 var reverseInt = n => n.toString().split("").reverse().join("") | 0;
 
 pipe(3).double.pow.reverseInt.get;  // -> 63
+```
+
+上面代码设置 Proxy 以后，达到了将函数名链式使用的效果。
+
+下面的例子则是利用`get`拦截，实现一个生成各种 DOM 节点的通用函数`dom`。
+
+```js
+const dom = new Proxy({}, {
+    get(target, property) {
+        return function(attrs = {}, ...children) {
+            const el = document.createElement(property);
+            for (let prop of Object.keys(attrs)) {
+                el.setAttribute(prop, attrs[prop]);
+            }
+
+            for (let child of children) {
+                if (typeof child === 'string') {
+                    child = document.createTextNode(child);
+                }
+                el.appendChild(child);
+            }
+            return el;
+        }
+    }
+})
+
+const el = dom.div({},
+    'Hello, my name is ',
+    dom.a({href: '//example.com'}, 'Mark'),
+    '. I like:',
+    dom.ul({},
+        dom.li({}, 'The web'),
+        dom.li({}, 'Food'),
+        dom.li({}, '...actually that\'s it')
+    )
+);
+
+document.body.appendChild(el);
+```
+
+下面是一个`get`方法的第三个参数的例子，它总是指向原始的读操作所在的那个对象，一般情况下就是 Proxy 实例。
+
+```js
+const proxy = new Proxy({}, {
+    get: function(target, key, receiver) {
+        return receiver;
+    }
+});
+
+proxy.getReceiver === proxy // -> true
+```
+
+上面代码中，`proxy`对象的`getReceiver`属性是由`proxy`对象提供的，所以`receiver`指向`proxy`对象。
+
+```js
+const proxy = new Proxy({}, {
+    get: function(target, key, receiver) {
+        return receiver;
+    }
+});
+
+const d = Object.create(proxy);
+d.a === d // -> true
+```
+
+上面代码中，`d`对象本身没有`a`属性，所以读取`d.a`的时候，会去`d`的原型`proxy`对象找。这时，`receiver`就指向`d`，代表原始的读操作所在的那个对象。
+
+如果一个属性不可配置（configurable）且不可写（writable），则 Proxy 不能修改该属性，否则通过 Proxy 对象访问该属性会报错。
+
+```js
+const target = Object.defineProperties({}, {
+    foo: {
+        value: 123,
+        writable: false,
+        configurable: false
+    },
+});
+
+const handler = {
+    get(target, propKey) {
+        return 'abc'
+    }
+}
+
+console.log(target)
+
+const proxy = new Proxy(target, handler);
+proxy.foo   // -> Uncaught TypeError
 ```
 
 ## 例子
