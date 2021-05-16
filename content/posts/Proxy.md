@@ -262,6 +262,172 @@ const proxy = new Proxy(target, handler);
 proxy.foo   // -> Uncaught TypeError
 ```
 
+### set()
+
+`set`方法用来拦截某个属性的赋值操作，可以接受四个参数，依次为目标对象、属性名、属性值和 Proxy 实例本身，其中最后一个参数可选。
+
+假定`Person`对象有一个`age`属性，该属性应该是一个不大于200的整数，那么可以使用`Proxy`保证`age`的属性符合要求。
+
+```js
+let validator = {
+    set: function(obj, prop, value) {
+        if (prop === 'age') {
+            if (!Number.isInteger(value)) {
+                throw new TypeError('The age is not an integer');
+            }
+            if (value > 200) {
+                throw new RangeError('The age seems invalid');
+            }
+        }
+
+        // 对于满足条件的 age 属性以及其它属性，直接保存
+        obj[prop] = value;
+        return true;
+    }
+}
+
+let person = new Proxy({}, validator);
+
+person.age = 100;
+
+person.age  // -> 100
+person.age = 'young';   // 报错
+person.age = 210;   // 报错
+```
+
+上面代码中，由于设置了存值函数`set`，任何不符合要求的`age`属性赋值，都会抛出一个错误，这是数据验证的一种实现方法。利用`set`方法，还可以数据绑定，即每当对象发生变化时，会自动更新 DOM。
+
+有时，我们会在对象上面设置内部属性，属性名的每一个字符使用下划线开头，表示这些属性不应该被外部使用。结合`get`和`set`方法，就可以做到防止这些内部属性被外部读写。
+
+```js
+let invariant = (key, action) => {
+    if (key[0] === '_') {
+        throw new Error(`invalid attempt to ${action} private "${key}" property.`)
+    }
+}
+
+const handler = {
+    get (target, key) {
+        invariant(key, 'get');
+        return target[key];
+    },
+    set (target, key, value) {
+        invariant(key, 'set');
+        target[key] = value;
+        return true;
+    }
+}
+
+const target = {};
+const proxy = new Proxy(target, handler);
+proxy._prop;    // Uncaught Error: invalid attempt to get private "_prop" property.
+proxy._prop = 'c';    // Uncaught Error: invalid attempt to set private "_prop" property.
+```
+
+上面代码中，只要读写的属性名的第一个字符时下划线，一律抛错，从而达到禁止读写内部属性的目的。
+
+**注意，如果目标对象自身的某个属性不可写，那么`set`方法将不起作用。**
+
+```js
+const obj = {};
+
+Object.defineProperty(obj, 'foo', {
+    value: 'bar',
+    writable: false
+});
+
+const handler = {
+    set: function(obj, prop, value, receiver) {
+        obj[prop] = 'bar';
+        return true;
+    }
+};
+
+const proxy = new Proxy(obj, handler);
+proxy.foo = 'baz';  // Uncaught TypeError: 'set' on proxy: trap returned truish for property 'foo' which exists in the proxy target as a non-configurable and non-writable data property with a different value
+proxy.foo;  // -> bar
+```
+
+上面代码中，`obj.foo`属性不可写，Proxy 对这个属性的`set`代理将不会生效。。
+
+**注意，`set`代理应当返回一个布尔值。严格模式下，`set`代理如果没有返回`true`，就会报错。**
+
+```js
+'use strict';
+const handler = {
+    set: function (obj, prop, value, receiver) {
+        obj[prop] = receiver;
+        // 无论有没有下面这一行，都会报错
+        return false;
+    }
+}
+
+const proxy = new Proxy({}, handler);
+
+// 在控制台设置可以成功，可能控制台不是严格模式
+proxy.foo = 'bar';  // Uncaught TypeError: 'set' on proxy: trap returned falsish for property 'foo'
+```
+
+上面代码中，严格模式下，`set`代理如果没有返回`true`，就会报错。
+
+### apply()
+
+`apply`方法拦截函数的调用、`call`和`apply`操作。
+
+`apply`方法接受三个参数，分别是目标对象、目标对象的上下文对象 (`this`) 和目标对象的参数数组。
+
+```js
+const handler = {
+    apply (target, ctx, args) {
+        return Reflect.apply(...arguments);
+    }
+}
+```
+
+下面是一个例子。
+
+```js
+const target = function() {return 'I am the target'};
+
+const handler = {
+    apply: function() {
+        return 'T am the proxy.';
+    }
+};
+
+let p = new Proxy(target, handler);
+p(); // "I am the proxy"
+```
+
+上面代码中，变量`p`是 Proxy 的实例，当它作为函数调用时（`p()`），就会被`apply`方法拦截，返回一个字符串。
+
+上面是另一个例子。
+
+```js
+let twice = {
+    apply(target, ctx, args) {
+        return Reflect.apply(...arguments) * 2;
+    }
+}
+
+let sum = (left, right) => {
+    return left + right;
+}
+
+let proxy = new Proxy(sum, twice);
+proxy(1, 2);    // -> 6
+proxy.call(null, 2, 3); // -> 10
+proxy.apply(null, [3, 4]);  // -> 14
+```
+
+上面代码中，每当执行`proxy`函数（直接调用或`call`和`apply`调用），就会被`apply`方法拦截。
+
+另外，直接`Reflect.apply`方法，也会被拦截。
+
+```js
+Reflect.apply(proxy, null, [9, 10]) // 38
+```
+
 ## 例子
 
 ```js
