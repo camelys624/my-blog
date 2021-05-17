@@ -428,6 +428,193 @@ proxy.apply(null, [3, 4]);  // -> 14
 Reflect.apply(proxy, null, [9, 10]) // 38
 ```
 
+### has()
+
+`has()`方法用来拦截`HasProperty`操作，即判断对象是否具有某个属性时，这个方法会生效。典型的操作就是`in`运算符。
+
+`has()`方法可以接受两个参数，分别是目标对象、需要查询的属性名。
+
+下面的例子使用`has()`方法隐藏某些属性，不被`in`运算符发现。
+
+```js
+const handler = {
+    has (target, key) {
+        if (key[0] === '_') {
+            return false;
+        }
+
+        return key in target;
+    }
+};
+
+let target = {_prop: 'foo', prop: 'foo'};
+let proxy = new Proxy(target, handler);
+
+'_prop' in proxy;   // false
+```
+
+上面代码中，如果原对象的属性名的第一个字符是下划线，`proxy.has()`就会返回`false`，从而不会被`in`运算符发现。
+
+如果原对象不可配置或者禁止扩展，这时`has()`拦截会报错。
+
+```js
+let obj = {a: 10};
+Object.preventExtensions(obj);
+
+let p = new Proxy(obj, {
+    has: function(target, prop) {
+        return false;
+    }
+});
+
+'a' in p    // Uncaught TypeError: 'has' on proxy: trap returned falsish for property 'a' but the proxy target is not extensible
+```
+
+上面代码中，`obj`对象禁止扩展，如果使用`has`拦截就会报错。也就是说，如果某个属性不可配置（或者目标对象不可扩展），则`has()`方法就不得“隐藏”（即返回`false`）目标对象的该属性。
+
+值得注意的是，`has()`方法拦截的是`HasProperty`操作，而不是`HasOwnProperty`操作，即`has()`方法不判断一个属性是对象自身的属性，还是继承的属性。
+
+另外，虽然`for...in`循环也用到了`in`运算符，但是`has()`拦截对`for...in`循环不生效。
+
+```js
+let stu1 = {name: '张三', score: 59};
+let stu2 = {name: '李四', score: 99};
+
+let handler = {
+    has(target, prop) {
+        if (prop === 'score' && target[prop] < 60) {
+            console.log(`${target.name} 不及格`);
+            return false;
+        }
+
+        return prop in target;
+    }
+}
+
+let oproxy1 = new Proxy(stu1, handler);
+let oproxy2 = new Proxy(stu2, handler);
+
+'score' in oproxy1
+// 张三 不及格
+// false
+
+'score' in oproxy2
+// true
+
+for (let a in oproxy1) {
+    console.log(oproxy1[a]);
+}
+
+// 张三
+//59
+
+for (let b in oproxy2) {
+    console.log(oproxy2[b]);
+}
+// 李四
+// 99
+```
+
+上面代码中，`has()`拦截只对`in`运算符生效，对`for...in`循环不生效，导致不符合要求的属性没有被`for...in`循环所排除。
+
+### construct()
+
+`construct()`方法用于拦截`new`命令，下面是拦截对象的写法。
+
+```js
+const handler = {
+    construct (target, args, newTarget) {
+        return new target(...args);
+    }
+}
+```
+
+`construct()`方法可以接受三个参数。
+
+- `target`: 目标对象。
+- `args`: 构造函数的参数数组。
+- `newTarget`: 创造实例对象时，`new`命令作用的构造函数（下面例子的`p`）。
+
+```js
+const p = new Proxy(function() {}, {
+    construct: function(target, args) {
+        console.log('called: ' + args.join(', '));
+        return {value: args[0] + 10};
+    }
+});
+
+(new p(1)).value;
+// called: 1
+// 11
+```
+
+`construct()`方法返回的必须是一个对象，否则会报错。
+
+```js
+const p = new Proxy(function() {}, {
+    construct: function(target, arguments) {
+        return 1;
+    }
+});
+
+new p() // Uncaught TypeError: 'construct' on proxy: trap returned non-object ('1')
+```
+
+另外，由于`construct()`拦截的是构造函数，所以**它的目标对象必须是函数**，否则就会报错。
+
+```js
+const p = new Proxy({}, {
+    construct: function(target, argumentsList) {
+        return {}
+    }
+})
+
+new p() // Uncaught TypeError: p is not a constructor
+```
+
+上面例子中，拦截的目标对象不是一个函数，而是一个对象（`new Proxy`的第一个参数），导致报错。
+
+**注意，`construct()`方法中的`this`指向的是`handler`，而不是实例对象。**
+
+```js
+const handler = {
+    construct: function(target, args) {
+        console.log(this === handler);
+        return new target(...args);
+    }
+}
+
+let p = new Proxy(function () {}, handler);
+new p() // -> true
+```
+
+### deleteProperty()
+
+`deleteProperty`方法用于拦截`delete`操作，如果这个方法抛出错误或者返回`false`，当前属性就无法被`delete`命令删除。
+
+```js
+let invariant = (key, action) => {
+    if (key[0] === '_') {
+        throw new Error(`invalid attempt to ${action} private "${key}" property`)
+    }
+}
+const handler = {
+    deleteProperty (target, key) {
+        invariant(key, 'delete');
+        delete target[key];
+        return true;
+    }
+}
+
+let target = {_prop: 'foo'};
+let proxy = new Proxy(target, handler);
+
+delete proxy._prop  // Uncaught Error: invalid attempt to delete private "_prop" property
+```
+
+上面代码中，`deleteProperty`方法拦截了`delete`操作符，删除第一个字符为下划线的属性会报错。
+
+
 ## 例子
 
 ```js
