@@ -614,6 +614,119 @@ delete proxy._prop  // Uncaught Error: invalid attempt to delete private "_prop"
 
 上面代码中，`deleteProperty`方法拦截了`delete`操作符，删除第一个字符为下划线的属性会报错。
 
+### defineProperty()
+
+`defineProperty()`方法拦截了`Object.defineProperty()`操作。
+
+```js
+const handler = {
+    defineProperty (target, key, descriptor) {
+        return false;
+    }
+};
+
+let target = {};
+
+let proxy = new Proxy(target, handler);
+proxy.foo = 'bar'
+
+proxy.foo   // -> undefined
+```
+
+上面代码中，`defineProperty()`方法内部没有任何操作，只返回`false`，导致添加新属性总是无效。注意，这里的`false`只是用来提示操作失败，本身并不能阻止添加新属性。
+
+注意，如果目标对象不可扩展（non-extensible），则`defineProperty()`不能增加目标对象上不存在的属性，否则会报错。另外，如果目标对象的某个属性不可写（writable）或不可配置（configurable），则`defineProperty()`方法不得改变这两个设置。
+
+### getOwnPropertyDescriptor()
+
+`getOwnPropertyDescriptor()`方法拦截`Object.getOwnPropertyDescriptor()`，返回一个属性描述对象或者`undefined`。
+
+```js
+const handler = {
+    getOwnPropertyDescriptor(target, key) {
+        if (key[0] === '_') {
+            return;
+        }
+
+        return Object.getOwnPropertyDescriptor(target, key);
+    }
+};
+
+let target = {_foo: 'bar', baz: 'tar'};
+let proxy = new Proxy(target, handler);
+
+Object.getOwnPropertyDescriptor(proxy, 'waz');  // -> undefined
+Object.getOwnPropertyDescriptor(proxy, '_foo'); // -> undefined
+Object.getOwnPropertyDescriptor(proxy, 'baz');
+// -> {value: "tar", writable: true, enumerable: true, configurable: true}
+```
+
+上面代码中，`handler.getOwnPropertyDescriptor()`方法对于第一个字符为下划线的属性名会返回`undefined`。
+
+### getPrototypeOf()
+
+`getPrototypeOf()`方法主要用来拦截获取对象原型。具体来说，拦截下面这些操作。
+
+- `Object.prototype.__proto__`
+- `Object.prototype.isPrototypeOf()`
+- `Object.getPrototypeOf()`
+- `Reflect.getPrototypeOf()`
+- `instanceof`
+
+下面是一个例子。
+
+```js
+let proto = {};
+let p = new Proxy({}, {
+    getPrototypeOf(target) {
+        return proto;
+    }
+});
+Object.getPrototypeOf(p) === proto  // true
+```
+
+上面代码中，`getPrototypeOf()`方法拦截`Object.getPrototypeOf()`，返回`proto`对象。
+
+**注意，`getPrototypeOf()`方法的返回值必须是对象或者`null`，否则报错。**另外，如果目标对象不可扩展（non-extensible），`getPrototypeOf()`方法**必须返回*目标对象*的原型对象**。
+
+### isExtensible()
+
+`isExtensible()`方法拦截`Object.isExtensible()`操作。
+
+```js
+let p = new Proxy({}, {
+    isExtensible: function(target) {
+        console.log('called');
+        return true;
+    }
+});
+
+Object.isExtensible(p)
+// called
+// true
+```
+
+上面代码设置了`isExtensible()`方法，在调用`Object,isExtensible`时会输出`called`。
+
+注意，该方法只能返回布尔值，否则返回值会被自动转为布尔值。
+
+这个方法有一个强限制，它的返回值必须与目标对象的`isExtensible`属性保持一致，否则就会抛出错误。
+
+```js
+Object.isExtensible(proxy) === Object.isExtensible(target)
+```
+
+下面是一个例子。
+
+```js
+let p = new Proxy({}, {
+    isExtensible: function(target) {
+        return true;
+    }
+});
+
+Object.isExtensible(p); // Uncaught TypeError: 'isExtensible' on proxy: trap result does not reflect extensibility of proxy target (which is 'true')
+```
 
 ## 例子
 
