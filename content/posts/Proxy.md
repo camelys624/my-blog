@@ -728,6 +728,214 @@ let p = new Proxy({}, {
 Object.isExtensible(p); // Uncaught TypeError: 'isExtensible' on proxy: trap result does not reflect extensibility of proxy target (which is 'true')
 ```
 
+### ownKeys()
+
+`ownKeys()`方法用来拦截对象自身属性的读取操作。具体来说，拦截以下操作。
+
+- `Object.getOwnPropertyNames()`
+- `Object.getOwnPropertySymbols()`
+- `Object.keys()`
+- `for...in`循环
+
+下面是拦截`Object.keys()`的例子。
+
+```js
+let target = {
+    a: 1,
+    b: 2,
+    c: 3
+};
+
+const handler = {
+    ownKeys(target) {
+        return ['a']
+    }
+};
+
+let proxy = new Proxy(target, handler);
+
+Object.keys(proxy)
+//['a']
+```
+
+上面代码拦截了对于`target`对象的`Object.keys()`操作，只返回`a`、`b`、`c`三个属性之中的`a`属性。
+
+`for...in`被拦截也只会返回`target`对象中有的属性。
+
+下面的例子是拦截第一个字符为下划线的属性名。
+
+```js
+let target = {
+    _bar: 'foo',
+    _prop: 'bar',
+    prop: 'baz'
+};
+
+const handler = {
+    ownKeys(target) {
+        return Reflect.ownKeys(target).filter(key => key[0] !== '_');
+    }
+};
+
+let proxy = new Proxy(target, handler);
+for (let key of Object.keys(proxy)) {
+    console.log(target[key]);
+}
+// baz
+```
+
+注意，**使用`Object.keys()`方法时，有三类属性会被`ownKeys()`方法自动过滤，不会返回。**
+
+- 目标对象上不存在的属性
+- 属性名为 Symbol 值
+- 不可遍历（`enumerable`）的属性
+
+```js
+let target = {
+    a: 1,
+    b: 2,
+    c: 3,
+    [Symbol.for('secret')]: 4
+};
+
+Object.defineProperty(target, 'key', {
+    enumerable: false,
+    configurable: true,
+    writable: true,
+    value: 'static'
+});
+
+const handler = {
+    ownKeys(target) {
+        return ['a', 'd', Symbol.for('secret'), 'key'];
+    }
+};
+
+let proxy = new Proxy(target, handler);
+
+Object.keys(proxy)
+//  ['a']
+```
+
+上面代码中，`ownKeys()`方法之中，显式返回不存在的属性（`d`）、Symbol 值（`Symbol.for('secret')`）、不可遍历的属性（`key`），结果都被自动过滤掉。
+
+`ownKeys()`方法还可以拦截`Object.getOwnPropertyNames()`。不受限制，**可以返回不属于对象的属性。**
+
+```js
+let target = {
+    d: 'test1',
+    f: 'test2'
+}
+
+let p = new Proxy(target, {
+    ownKeys: function() {
+        return ['a', 'b', 'c']
+    }
+})
+
+Object.getOwnPropertyNames(p);
+// ["a", "b", "c"]
+```
+
+`ownKeys()`方法返回的数组成员，**只能是字符串或 Symbol 值**。如果有其它类型的值，或者返回的根本不是数组，就会报错。
+
+```js
+let obj = {};
+
+let p = new Proxy(obj, {
+    ownKeys: function (target) {
+        return [123, true, undefined, null, {}, []]
+    }
+});
+
+Object.getOwnPropertyNames(p);
+// Uncaught TypeError: 123 is not a valid property name
+```
+
+上面代码中，`ownKeys()`方法虽然返回一个数组，但是每一个数组成员都不是字符串或者 Symbol 值，因此就报错了。
+
+如果目标对象自身包含不可配置的属性，则该属性必须被`ownKeys()`方法返回，否则报错。
+
+```js
+let obj = {};
+Object.defineProperty(obj, 'a', {
+    configurable: false,
+    enumerable: true,
+    value: 10
+});
+
+let p = new Proxy(obj, {
+    ownKeys: function (target) {
+        return ['b'];
+    }
+});
+
+Object.getOwnPropertyNames(p);
+// Uncaught TypeError: 'ownKeys' on proxy: trap result did not include 'a'
+```
+
+上面代码中，`obj`对象是不可扩展的，这时`ownKeys()`方法返回的数组之中，包含了`obj`对象的多余属性`b`，所以导致了报错。
+
+### preventExtensions()
+
+`preventExtensions()`方法拦截`Object.preventExtensions()`。该方法必须返回一个布尔值，否则会被自动转为布尔值。
+
+这个方法有一个限制，只有目标对象不可扩展时（即`Object.isExtensible(proxy)`为`false`），`proxy.preventExtensions`才能返回`true`，否则会报错。
+
+```js
+const proxy = new Proxy({}, {
+    preventExtensions: function(target) {
+        return true;
+    }
+});
+
+Object.preventExtensions(proxy);
+// Uncaught TypeError: 'preventExtensions' on proxy: trap returned truish but the proxy target is extensible
+```
+
+在上面代码中，`proxy.preventExtensions()`方法返回`true`，但这时`Object.isExtensible(proxy)`会返回`true`，因此报错。
+
+为了防止出现这个问题，通常要在`proxy.preventExtensions()`方法里面，调用一次`Object.preventExtensions()`。
+
+```js
+// 感觉一点都不妥
+let proxy = new Proxy({}, {
+    preventExtensions: function(target) {
+        console.log('called');
+        Object.preventExtensions(target);
+        return true;
+    }
+})
+
+Object.preventExtensions(proxy)
+// 'called'
+// Proxy {}
+```
+
+### setPrototypeOf()
+
+`setPrototypeOf()`方法主要用来拦截`Object.setPrototypeOf()`方法。
+
+下面是一个例子。
+
+```js
+const handler = {
+    setPrototypeOf (target, proto) {
+        throw new Error('Changing the prototype is forbidden');
+    }
+};
+
+let proto = {};
+let target = function () {};
+let proxy = new Proxy(target, handler);
+Object.setPrototypeOf(proxy, proto);
+// Error: Changing the prototype is forbidden
+```
+
+上面代码中，只要修改`target`的原型对象，就会报错。
+
+注意，**该方法只能返回布尔值，否则会被自动转为布尔值**。另外，如果目标对象不可扩展（non-extensible），`setPrototypeOf()`方法不得改变目标对象的原型。
+
 ## 例子
 
 ```js
