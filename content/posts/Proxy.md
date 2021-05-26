@@ -936,6 +936,128 @@ Object.setPrototypeOf(proxy, proto);
 
 注意，**该方法只能返回布尔值，否则会被自动转为布尔值**。另外，如果目标对象不可扩展（non-extensible），`setPrototypeOf()`方法不得改变目标对象的原型。
 
+## Proxy.revocable()
+
+`Proxy.revocable()`方法返回一个可取消的 Proxy 实例。
+
+```js
+let target = {};
+const handler = {};
+
+let {proxy, revoke} = Proxy.revocable(target, handler);
+
+proxy.foo = 123;
+proxy.foo   // -> 123
+
+revoke();
+proxy.foo;
+// Uncaught TypeError: Cannot perform 'get' on a proxy that has been revoked
+```
+
+`Proxy.revocable()`方法返回一个对象，该对象的`proxy`属性是`Proxy`实例，`revoke`属性是一个函数，可以取消`Proxy`实例。上面代码中，当执行`revoke`函数之后，再访问`Proxy`实例，就会抛出一个错误。
+
+`Proxy.revocable()`的一个使用场景是，目标对象不允许直接访问，必须通过代理访问，一旦访问结束，就收回代理权，不允许再次访问。
+
+## this 问题
+
+虽然 Proxy 可以代理针对目标对象的访问，但它不是目标对象的透明代理，即不做任何拦截的情况下，也无法保证与目标对象的行为一致。主要原因就是在 Proxy 代理的情况下，目标对象内部的`this`关键字会指向 Proxy 代理。
+
+```js
+const target = {
+    m: function () {
+        console.log(this === proxy);
+    }
+}
+
+const handler = {};
+
+const proxy = new Proxy(target, handler);
+target.m()  // -> false
+proxy.m()   // -> true
+```
+
+`Proxy`修改了`this`的指向，其实我觉得还好，本来就是返回的`Proxy`实例，确实应该指向`proxy`。但是他们好像希望`this`指向不变。
+
+下面是一个例子，由于`this`指向的变化，导致 Proxy 无法代理目标对象。
+
+```js
+const _name = new WeakMap();
+
+class Person {
+    constructor(name) {
+        _name.set(this, name);
+    }
+
+    get name() {
+        return _name.get(this);
+    }
+}
+
+const jane = new Person('Jane');
+jane.name   // 'Jane'
+
+const proxy = new Proxy(jane, {});
+proxy.name  // undefined
+```
+
+上面代码中，目标对象`jane`的`name`属性，实际保存在外部`WeakMap`对象`_name`上面，通过`this`键区分。由于通过`proxy.name`访问时，`this`指向`proxy`，导致无法取到值，所以返回`undefined`。
+
+此外，有些原生对象的内部属性，只有通过正确的`this`才能拿到，所以 Proxy 也无法代理这些原生对象的属性。
+
+```js
+const target = new Date();
+const handler = {};
+const proxy = new Proxy(target, handler);
+
+proxy.getDate();
+// Uncaught TypeError: this is not a Date object.
+```
+
+上面代码中，`getDate()`方法只能在`Date`对象实例上面拿到，如果`this`不是`Date`对象实例就会报错。这时，`this`绑定原始对象，就可以解决这个问题。
+
+```js
+const target = new Date('2021-05-26');
+const handler = {
+    get(target, prop) {
+        if (prop === 'getDate') {
+            return target.getDate.bind(target);
+        }
+        return Reflect.get(target, prop);
+    }
+};
+const proxy = new Proxy(target, handler);
+
+proxy.getDate() // 26
+```
+
+另外，Proxy 拦截函数内部的`this`，指向的是`handler`对象。
+
+```js
+const handler = {
+    get: function (target, key, receiver) {
+        console.log(this === handler);
+        return 'Hello, ' + key;
+    },
+    set: function (target, key, value) {
+        console.log(this === handler);
+        target[key] = value;
+        return true;
+    }
+}
+
+const proxy = new Proxy({}, handler);
+
+proxy.foo
+// true
+// Hello, foo
+
+proxy.foo = 1
+// true
+// 1
+```
+
+上面例子中，`get()`和`set()`拦截函数内部的`this`，指向的都是`handler`对象。
+
 ## 例子
 
 ```js
