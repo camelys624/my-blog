@@ -1058,17 +1058,75 @@ proxy.foo = 1
 
 上面例子中，`get()`和`set()`拦截函数内部的`this`，指向的都是`handler`对象。
 
-## 例子
+## 5. 实例：Web 服务的客户端
+
+Proxy 对象可以拦截目标对象的任意属性，这使得它很适合用来写 Web 服务的客户端。
 
 ```js
-let obj = new Proxy({}, {
-    get: function (target, propKey, receiver) { // receiver Proxy 或者继承 Proxy 的对象
-        console.log(`getting ${propKey}`);
-        return Reflect.get(target, propKey, receiver);
-    },
-    set: function (target, propKey, value, receiver) {
-        console.log(`setting ${propKey}`);
-        return Reflect.set(target, propKey, value, receiver);
+const service = createWebService('http://examaple.com/data');
+
+service.employees().then(json => {
+    const employees = JSON.parse(json)
+});
+```
+
+上面代码新建了一个 web 服务的接口，这个接口返回各种数据。Proxy 可以拦截这个对象的任意属性，所以不用为每一种数据写一个适配方法，只要写一个 Proxy 拦截就可以了。
+
+```js
+function createWebService(baseUrl) {
+    return new Proxy({}, {
+        get (target, propKey, receiver) {
+            return () => httpGet(baseUrl + '/' + propKey);
+        }
+    })
+}
+```
+
+同理，Proxy 也可以用来实现数据库的 ORM 层。
+
+## 例子
+
+### 操作 DOM 节点
+
+有时，我们可能需要互换两个不同的元素的属性或类名。下面的代码以此为目标，展示了`set` handler 的使用场景。
+
+```js
+let view = new Proxy({
+    selected: null
+}, {
+    set: function(obj, prop, newVal) {
+        let oldVal = obj[prop];
+
+        if (prop === 'selected') {
+            if (oldVal) {
+                oldVal.setAttribute('aria-selected', 'false');
+            }
+
+            if (newVal) {
+                newVal.setAttribute('aria-selected', 'true');
+            }
+        }
+
+        // 默认行为是存储被传入 setter 函数的属性值
+        obj[prop] = newVal;
+
+        // 表示操作成功
+        return true;
     }
-})
+});
+
+let i1 = view.selected = document.getElementById('item-1');
+console.log(i1.getAttribute('aria-selected'));  // 'true'
+
+let i2 = view.selected = document.getElementById('item-2');
+console.log(i1.getAttribute('aria-selected'));  // 'false'
+console.log(i2.getAttribute('aria-selected'));  // 'true'
+```
+
+### 值修正及附加属性
+
+以下`products`代理会计算传值并根据需要转换为数组。这个代理对象同时支持一个叫做`latestBrowser`的附加属性，这个属性可以同时作为 getter 和 setter。
+
+```js
+
 ```
