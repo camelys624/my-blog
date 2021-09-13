@@ -1,6 +1,6 @@
 ---
 title: Learn Proxy
-date: 2021-5-6
+date: 2021-05-06
 image: 'https://github.com/ziishaned/learn-regex/raw/master/img/regexp-cn.png'
 imageAlt: Proxy
 ---
