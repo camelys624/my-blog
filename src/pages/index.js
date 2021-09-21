@@ -126,9 +126,12 @@ class LineTension extends Component {
   }
 
   async componentDidMount() {
-    const width = document.body.clientWidth
-    await this.setState(state => ({ width: width }))
-    this.renderChart()
+    const width = document.body.clientWidth;
+    await this.setState(state => ({ width: width }));
+    this.renderChart();
+    if ('paintWorklet' in CSS) {
+      CSS.paintWorklet.addModule('./css-houdini/huiwen-border.js');
+    }
   }
 
   renderChart() {
@@ -157,7 +160,7 @@ class LineTension extends Component {
   render() {
     return (
       <div id="lineTensionChart" className={indexStyle.myIndexChart}>
-        <canvas id="myCanvas" className={indexStyle.myCanvas}></canvas>
+        <canvas id="myCanvas" className={indexStyle.myCanvas}/>
       </div>
     )
   }
@@ -183,7 +186,8 @@ export const query = graphql`
           id
           frontmatter {
             title
-            date
+            date(formatString: "YYYY-MM-DD")
+            resume
           }
           fields {
             slug

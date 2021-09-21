@@ -1,8 +1,11 @@
 .container-item {
     width: calc(50% - 1em);
     padding: 0 1em;
+    height: 240px;
+    overflow: hidden;
     border-radius: 4px;
     box-sizing: border-box;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 9px rgba(0, 0, 0, 0.4);
     margin-bottom: 1em;
+    cursor: pointer;
 }
