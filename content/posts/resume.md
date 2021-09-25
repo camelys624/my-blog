@@ -7,10 +7,10 @@ resume: true
 ## 基本信息
 
 <div style="position: relative; height: 194px;">
-    <img src="/head/xjpic.jpg" alt="head" style="position: absolute;width: 144px;">
+    <img src="../assets/xjpic.jpg" alt="head" style="position: absolute;width: 144px;">
     <div style="margin-left: 164px;">
         <div style="margin-bottom: 20px; height: 40px; border-bottom: solid 1px lightgrey">
-            <h2 style="display: inline-block;font-weight:bold;">&#x6768;&#x5347;</h3>
+            <strong style="font-size: 1.75em">&#x6768;&#x5347;</strong>
             <span>&nbsp&nbsp&nbspWeb 前端开发工程师</span>
         </div>
         <div style="margin-bottom: 20px;">
@@ -65,7 +65,7 @@ resume: true
 
 - **智慧档案云平台** 这个系统用来集中管理客户的档案与监控硬件设备信息。此项目使用传统的html、CSS 和 JavaScript 开发，UI框架使用的 layUI。本人负责档案的转借流程与自定义流程模块的工作。当时做的东西都比较简单，但是因为是边学边做，所以都还挺有趣，记忆较深的是抄了菜鸟教程的可视化网页布局到项目中。
 
-### 其他
+## 其他
 
 在工作之外，我也会去关注学习一些前沿的技术，所以我搭建了一个 VPS 服务，方便自己去谷歌与推特查找了解相关的知识。目前正在玩的是使用 Gatsby 搭建一个自己的网站，并准备把我比较感兴趣的 CSS Houdini、Web Components 与 WebGL 等相关的技术体现出来。除此之外，有时候也会帮朋友解决一些问题，比如用 python 根据验证规则校验数据；使用 NodeJS 爬取数据（是他导师参与的一个项目的网站，得到允许）。心血来潮的时候也会去 leetcode上刷刷算法。
 
