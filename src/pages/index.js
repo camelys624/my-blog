@@ -2,6 +2,9 @@ import React, { Component } from "react"
 import indexStyle from "./index.module.css"
 import Header from "../components/header"
 import Content from "../components/content"
+import {allComponents, provideFASTDesignSystem} from "@microsoft/fast-components"
+// import { CustomCard } from "../components/web-component-card/index"
+import {initCustomCard} from "../components/web-component-card"
 import * as THREE from "three"
 
 // import { TrackballControls } from "three/examples/jsm/controls/TrackballControls"
@@ -10,6 +13,9 @@ import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader"
 import { OBJLoader2 } from "three/examples/jsm/loaders/OBJLoader2"
 import { MtlObjBridge } from "three/examples/jsm/loaders/obj2/bridge/MtlObjBridge"
 import { graphql } from "gatsby"
+
+provideFASTDesignSystem().register(allComponents);
+initCustomCard()
 
 const OBJLoader2Example = function(elementToBindTo) {
   this.renderer = null

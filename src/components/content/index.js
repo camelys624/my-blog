@@ -1,7 +1,7 @@
 import React from "react"
 import { navigate } from "gatsby"
 import contentStyle from "./index.module.css"
-import BusinessCard from "../business-card"
+// import BusinessCard from "../business-card"
 // import dayjs from "dayjs";
 
 export default (props) => {
@@ -28,7 +28,13 @@ export default (props) => {
             {
               node.frontmatter.resume
                 ?
-                <BusinessCard/>
+                <custom-card job="front-end developer">
+                  <h1 slot="person-name">Camel</h1>
+                  <p slot="phone">15922835412</p>
+                  <p slot="email">camel_yangz@163.com</p>
+                  <img slot="wechat-pic" src="./mmqrcode1631632704399.png" alt="wechat"/>
+                  <img slot="twitter-pic" src="./20210914_232019.jpg" alt="twitter"/>
+                </custom-card>
                 :
                 <>
                   <h3>

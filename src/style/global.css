@@ -14,6 +14,25 @@ body {
     flex-wrap: wrap;
 }
 
+.business-container {
+    padding: 28px 10px;
+    margin: 0 -1em;
+    height: 184px;
+    background: radial-gradient(#2C3E50, #000000);
+    max-width: 500px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@supports (background: paint(huiwen-border)) {
+    .business-container {
+        --huiwen-line-width: 2px;
+        background-image: paint(huiwen-border);
+    }
+}
+
 .hljs {
     font-family: "Fira Code";
 }
