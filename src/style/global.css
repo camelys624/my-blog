@@ -1,3 +1,7 @@
+:root {
+    --system-radius: 0 3px 9px rgba(0, 0, 0, 0.4);
+}
+
 body {
     margin: 0;
     padding: 0;

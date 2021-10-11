@@ -4,49 +4,61 @@ export function initCustomCard() {
       constructor() {
         super()
         const template = `
-        <div class="front-info">
-          <slot name="person-name" class="person-name">Camel</slot>
-          <div class="contact-info">
-            <div class="contact-info-item">
-              <label>Phone:</label>
-              <slot name="phone"></slot>
-            </div>
-            <div class="contact-info-item">
-              <label>Email:</label>
-              <slot name="email"></slot>
+        <div class="custom-card-container">
+          <div class="front-info">
+            <slot name="person-name" class="person-name">Camel</slot>
+            <div class="contact-info">
+              <div class="contact-info-item">
+                <label>Phone:</label>
+                <slot name="phone"></slot>
+              </div>
+              <div class="contact-info-item">
+                <label>Email:</label>
+                <slot name="email"></slot>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="black-info">
-          <figure>
-            <slot name="wechat-pic"></slot>
-            <figcaption>Wechat</figcaption>
-          </figure>
-          <figure>
-            <slot name="twitter-pic"></slot>
-            <figcaption>Twitter</figcaption>
-          </figure>
+          <div class="black-info">
+            <figure>
+              <div class="img-box">
+                <slot name="wechat-pic"></slot>
+              </div>
+              <figcaption>Wechat</figcaption>
+            </figure>
+            <figure>
+              <div class="img-box">
+                <slot name="twitter-pic"></slot>
+              </div>
+              <figcaption>Twitter</figcaption>
+            </figure>
+          </div>
         </div>
       `
 
         let style = document.createElement("style")
         style.textContent = `
-          :host{ 
-            padding: 28px 10px;
-            margin: 0 -1em;
-            height: 184px;
+          :host{
+            width: calc(50% - 1em);
+            height: 240px;
             background: radial-gradient(#2C3E50, #000000);
             max-width: 500px;
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: block;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 4px;
+            box-sizing: border-box;
+            box-shadow: var(--system-radius);
           }
           @supports (background: paint(huiwen-border)) {
               :host {
                   --huiwen-line-width: 2px;
                   background-image: paint(huiwen-border);
               }
+          }
+          .custom-card-container {
+            height: 100%;
+            width: 100%;
           }
           .front-info {
             display: flex;
@@ -58,34 +70,39 @@ export function initCustomCard() {
             height: 100%;
             padding: 1em 2em;
             position: relative;
-            transition: transform 0.5s easy-in-out;
+            transition: transform 0.5s ease-in-out;
             transform: translateY(0);
-          }
-          .front-info .person-name {
-            position: relative;
-            margin-bottom: 1em;
-          }
-          .front-info .person-name::after {
-            content: ${this.getAttribute('job')};
-            font-size: 14px;
-            margin-left: 1em;
+            box-sizing: border-box;
           }
           .contact-info {
            display: flex;
            justify-content: space-between; 
+           width: 100%;
+           box-sizing: border-box;
           }
           .contact-info label {
             margin-right: 5px;
           }
           .black-info {
-            background-color: rgba(0, 0, 0, .6);
+            background-color: rgba(0, 0, 0, .8);
             width: 100%;
             height: 100%;
-            transition: transform 0.5s easy-in-out;
+            transition: transform 0.5s ease-in-out;
             transform: translateY(0);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
           }
-          :host:hover .front-info,
-          :host:hover .black-info {
+          .img-box {
+            width: 100px;
+            height: 100px;
+          }
+          figcaption {
+            margin-top: 5px;
+            text-align: center;
+          }
+          .custom-card-container:hover .front-info,
+          .custom-card-container:hover .black-info {
             transform: translateY(-100%);
           }
         `

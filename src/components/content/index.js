@@ -17,35 +17,28 @@ export default (props) => {
   return (
     <div className="content-container">
       {
-        data.allMarkdownRemark.edges.map(({ node }) => (
-          <div role="link" tabIndex="0"
+        data.allMarkdownRemark.edges.map(({ node }) => node.frontmatter.resume
+          ? <custom-card role="link" tabIndex="0" onClick={() => {routeTo(node.fields.slug)}} onKeyDown={() => {}} key={node.id}>
+            <h1 slot="person-name" data-job="front-end developer" className={contentStyle.personName}>杨升</h1>
+            <span slot="phone">15922835412</span>
+            <span slot="email">camel_yangz@163.com</span>
+            <img slot="wechat-pic" src="./mmqrcode1631632704399.png" alt="wechat"/>
+            <img slot="twitter-pic" src="./20210914_232019.jpg" alt="twitter"/>
+          </custom-card>
+          : <div role="link" tabIndex="0"
                className={contentStyle.containerItem}
                onClick={() => {
                  routeTo(node.fields.slug)
                }}
                onKeyDown={() => {
                }} key={node.id}>
-            {
-              node.frontmatter.resume
-                ?
-                <custom-card job="front-end developer">
-                  <h1 slot="person-name">Camel</h1>
-                  <p slot="phone">15922835412</p>
-                  <p slot="email">camel_yangz@163.com</p>
-                  <img slot="wechat-pic" src="./mmqrcode1631632704399.png" alt="wechat"/>
-                  <img slot="twitter-pic" src="./20210914_232019.jpg" alt="twitter"/>
-                </custom-card>
-                :
-                <>
                   <h3>
                     {node.frontmatter.title}{" "}
                     < span style={{ color: "#bbb" }}>- {node.frontmatter.date}</span>
                   </h3>
                   <p>{node.excerpt}</p>
-                </>
-            }
           </div>
-        ))
+        )
       }
     </div>
   )
