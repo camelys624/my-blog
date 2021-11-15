@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -14,34 +15,147 @@
         }
     </style>
 </head>
+
 <body style="background-color: #565656">
-<div class="businessContainer">
-    <div>
-        <div>
-            <h1>杨升</h1>
-            <div>WEB前端开发工程师</div>
-        </div>
+    <div class="businessContainer">
         <div>
             <div>
-                <label></label>
-                <div>15922835412</div>
+                <h1>杨升</h1>
+                <div>WEB前端开发工程师</div>
             </div>
             <div>
-                <label></label>
-                <div>camel_yangz@163.com</div>
-            </div>
-            <div>
-                <label></label>
-                <div>重庆市高新区</div>
+                <div>
+                    <label></label>
+                    <div>15922835412</div>
+                </div>
+                <div>
+                    <label></label>
+                    <div>camel_yangz@163.com</div>
+                </div>
+                <div>
+                    <label></label>
+                    <div>重庆市高新区</div>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-  setTimeout(() => {
-    CSS.paintWorklet.addModule('../public/huiwen-border.js');
-  }, 1000)
+    <script>
+        setTimeout(() => {
+            CSS.paintWorklet.addModule('../public/huiwen-border.js');
+        }, 1000)
 
-</script>
+        var search = function (nums, target) {
+            if (nums.length === 1) {
+                return nums[0] === target ? 0 : -1;
+            }
+
+
+            let start = 0,
+                mid = Math.floor((nums.length - 1) / 2),
+                end = nums.length - 1;
+
+            while (start <= end) {
+                if (nums[mid] === target) {
+                    return mid;
+                }
+
+                if (target < nums[start] || (nums[mid] <= target && target <= nums[end])) {
+                    start = mid + 1;
+                    mid = start + Math.floor((end - start) / 2);
+                } else {
+                    end = mid - 1;
+                    mid = end - Math.floor((end - start) / 2);
+                }
+            }
+
+            let a = [
+                [".", ".", "4", ".", ".", ".", "6", "3", "."],
+                [".", ".", ".", ".", ".", ".", ".", ".", "."],
+                ["5", ".", ".", ".", ".", ".", ".", "9", "."],
+                [".", ".", ".", "5", "6", ".", ".", ".", "."],
+                ["4", ".", "3", ".", ".", ".", ".", ".", "1"],
+                [".", ".", ".", "7", ".", ".", ".", ".", "."],
+                [".", ".", ".", "5", ".", ".", ".", ".", "."],
+                [".", ".", ".", ".", ".", ".", ".", ".", "."],
+                [".", ".", ".", ".", ".", ".", ".", ".", "."]
+            ]
+
+            return -1;
+        };
+        const countNext = function (str, n) {
+            let result = '';
+            let count = 0;
+
+            for (let i = 0; i < str.length; i++) {
+                if (i > 0 && str[i - 1] !== str[i]) {
+                    result += count.toString() + str[i - 1];
+                    count = 1;
+                } else {
+                    count++;
+                }
+            }
+
+            result = result + count.toString() + str[str.length - 1];
+
+            return n === 1 ? result : countNext(result, n - 1);
+        }
+        const strAdd = function (num1, num2) {
+            let i = num1.length - 1;
+            let j = num2.length - 1;
+            let add = 0,
+                resArr = [];
+
+            while (i >= 0 || j >= 0 || add) {
+                let val1 = i >= 0 ? num1[i] - '0' : 0;
+                let val2 = j >= 0 ? num2[j] - '0' : 0;
+
+                let result = val1 + val2 + add;
+                resArr.push(result % 10);
+                add = Math.floor(result / 10);
+                i--;
+                j--;
+            }
+            return resArr.reverse().join('');
+        }
+
+        var multiply = function (num1, num2) {
+            if (num1 === '0' || num2 === '0') return '0';
+            let res = '0';
+            let add = 0;
+
+            for (let i = num1.length - 1; i >= 0; i--) {
+                let x = num1[i] - '0';
+                let _result = new Array(num1.length - 1 - i).fill(0);
+                for (let j = num2.length - 1; j >= 0; j--) {
+                    let y = num2[j] - '0';
+                    let result = x * y + add;
+                    _result.push(result % 10);
+                    add = Math.floor(result / 10);
+                }
+                if (add) _result.push(add);
+                res = strAdd(res, _result.reverse().join(''));
+            }
+
+            return res;
+        };
+        var permute = function (nums) {
+            let result = [];
+
+            function dfs(resArr, arr, deepth) {
+                if (deepth === nums.length) {
+                    result.push(resArr);
+                }
+                for (let i = 0; i < arr.length; i++) {
+                        let a = JSON.parse(JSON.stringify(arr));
+                        a.splice(i, 1);
+                        dfs([...resArr, arr[i]], a, deepth+1)
+                }
+            }
+            dfs([], nums, 0);
+
+            return result;
+        };
+    </script>
 </body>
+
 </html>

@@ -1,10 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>learn class</title>
 </head>
-<body>
-$END$
+<body>g
+
 </body>
+<script>
+    class MyClassDemo {
+      static graphicsName = 'Polygon';  // 定义静态字段，实例无法使用
+      static staticProperty1;
+      static staticProperty2;
+      static {  // 可以定义多个这样的代码块
+        this.staticProperty1 = 'testStatic';  // 可以这样修改 static 变量
+        this.staticProperty2 = 'testStatic2';  // 可以这样修改 static 变量
+      }
+
+      #privateString = `
+        Hello Iverson,
+        年关将至，我向您提出申请调薪的请求。我觉得我的工作量与我目前的工资是不匹配的，我刚开始来的时候主要是负责台湾 diag team 的项目开发，
+        不过从去年夏天开始，我的工作重心开始偏向 nova 的项目。我接手了svtp的开发并上线，帮助pegsuss的后端迁移过渡以及现在hydra项目的开发工作，
+        同时也进行着 diag 项目的更新。
+        本来按照我的计划，我是打算在今年年底找个下家的。但是，我觉得您之前说的话挺有道理，我决定还是先沟通一下；毕竟我还是很喜欢这里，
+        这里的工作氛围让我感觉很安逸；而且，hydra是我从零开始上手的，还有很多的一些想法想要在这上面实现。
+        去年过年之前，我拿到了一个11k的offer，不过因为一些原因，我并没有过去，然后我在这儿的期望也是这么多。
+        最后，期待您的回复。
+      `
+
+      testItem = 'asd'; // 定义 变量
+
+      constructor(width, height) {  // 接受形参
+        this.width = width;
+        this.height = height;
+      }
+
+      getArea() {
+        return this.width * this.height;
+      }
+
+      static getGraphicName() { // 静态方法，只能类自己调用
+        return MyClassDemo.graphicsName;
+      }
+
+      getPublicItem() {
+        return this.testItem;
+      }
+
+      getStaticItem() {
+        return MyClassDemo.staticProperty1;
+      }
+    }
+
+    // 可以通过计算得出字段名
+    let PREFIX = 'prefix';
+    class MyExtendDemo extends MyClassDemo {
+      static staticProperty3 = super.width; // 无法获取字段
+      static staticProperty4 = super.graphicsName; // 可以获取静态字段
+      staticProperty5 = super.testItem; // 无法获取字段
+      // static staticProperty6 = super.getArea(); // 报错：Uncaught TypeError: super.getArea is not a function
+      static staticProperty7 = super.getGraphicName(); // 可以获取静态方法
+      [`${PREFIX}Field`] = 'prefixed prefix';
+
+      constructor(width) {
+        super(width, width);
+      }
+
+      getStaticItem() { // 重写父类方法
+        console.log(
+          MyExtendDemo.staticProperty3,
+          MyExtendDemo.staticProperty4,
+          this.staticProperty5,
+          // MyExtendDemo.staticProperty6,
+          MyExtendDemo.staticProperty7,
+        );
+      }
+
+      getStaticItem2() {
+        // return MyClassDemo.staticProperty2;  // 有值
+        // return staticProperty3;  // 有返回值
+        // return super.getGraphicName(); // 报错: Uncaught TypeError: super.getGraphicName is not a function
+        // return super.staticProperty1; // undefined
+        // return super.width;  // undefined,无法取值
+        return super.getArea(); // 可以调用
+      }
+    }
+</script>
 </html>

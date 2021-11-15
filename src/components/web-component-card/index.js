@@ -106,7 +106,6 @@ export function initCustomCard() {
             transform: translateY(-100%);
           }
         `
-        console.log(this.getAttribute('job'));
         const shadowRoot = this.attachShadow({ mode: "open" })
         shadowRoot.appendChild(style)
         shadowRoot.append(parseHTML(template))
