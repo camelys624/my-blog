@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import indexStyle from "./index.module.css"
 import Header from "../components/header"
 import Content from "../components/content"
-import {allComponents, provideFASTDesignSystem} from "@microsoft/fast-components"
+// import {allComponents, provideFASTDesignSystem} from "@microsoft/fast-components"
 // import { CustomCard } from "../components/web-component-card/index"
 import {initCustomCard} from "../components/web-component-card"
 import * as THREE from "three"
@@ -14,7 +14,6 @@ import { OBJLoader2 } from "three/examples/jsm/loaders/OBJLoader2"
 import { MtlObjBridge } from "three/examples/jsm/loaders/obj2/bridge/MtlObjBridge"
 import { graphql } from "gatsby"
 
-provideFASTDesignSystem().register(allComponents);
 initCustomCard()
 
 const OBJLoader2Example = function(elementToBindTo) {
@@ -135,6 +134,7 @@ class LineTension extends Component {
     const width = document.body.clientWidth;
     await this.setState(state => ({ width: width }));
     this.renderChart();
+
     if ('paintWorklet' in CSS) {
       CSS.paintWorklet.addModule('./css-houdini/huiwen-border.js');
     }

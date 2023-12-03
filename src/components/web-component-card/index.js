@@ -1,5 +1,9 @@
 export function initCustomCard() {
-  customElements.define("custom-card",
+  if (typeof window === 'undefined' || !window.customElements) {
+    return;
+  }
+
+  window.customElements.define("custom-card",
     class extends HTMLElement {
       constructor() {
         super()
