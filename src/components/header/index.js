@@ -1,14 +1,14 @@
 import React from "react"
 import { Link } from 'gatsby';
-import headerStyle from './index.module.css';
+import './index.module.css';
 
 export default (props) => {
   const options = props.data || {};
 
   return (
-    <header className={headerStyle.myHeader}
+    <header className="myHeader"
             style={{backgroundColor: `rgba(0, 0, 0, ${options.opacity || '0.8'})`}}>
-      <div className={headerStyle.myHeaderContent}>
+      <div className="myHeaderContent">
         <Link to='/'>
           <svg xmlns="http://www.w3.org/2000/svg" id="canvas" version="1.1"
                baseProfile="full"

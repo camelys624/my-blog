@@ -1,6 +1,6 @@
 import React from "react"
 import { navigate } from "gatsby"
-import contentStyle from "./index.module.css"
+import "./index.module.css"
 // import BusinessCard from "../business-card"
 // import dayjs from "dayjs";
 
@@ -19,14 +19,14 @@ export default (props) => {
       {
         data.allMarkdownRemark.edges.map(({ node }) => node.frontmatter.resume
           ? <custom-card role="link" tabIndex="0" onClick={() => {routeTo(node.fields.slug)}} onKeyDown={() => {}} key={node.id}>
-            <h1 slot="person-name" data-job="front-end developer" className={contentStyle.personName}>杨升</h1>
+            <h1 slot="person-name" data-job="front-end developer" className="personName">杨升</h1>
             <span slot="phone">15922835412</span>
             <span slot="email">camel_yangz@163.com</span>
             <img slot="wechat-pic" src="./mmqrcode1631632704399.png" alt="wechat"/>
             <img slot="twitter-pic" src="./20210914_232019.jpg" alt="twitter"/>
           </custom-card>
           : <div role="link" tabIndex="0"
-               className={contentStyle.containerItem}
+               className="containerItem"
                onClick={() => {
                  routeTo(node.fields.slug)
                }}

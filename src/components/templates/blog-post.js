@@ -3,7 +3,7 @@ import hljs from "highlight.js"
 import { graphql } from "gatsby"
 import Header from "../header/index"
 
-import postStyle from "./blogPost.module.css"
+import "./blogPost.module.css"
 
 class Content extends Component {
   constructor(props) {
@@ -31,7 +31,7 @@ class Content extends Component {
     return (
       <>
         <Header data={{opacity: 1}}/>
-        <div className={postStyle.contentContainer}>
+        <div className="contentContainer">
           <h1>{post.frontmatter.title}</h1>
           <div dangerouslySetInnerHTML={{ __html: post.html }}></div>
         </div>

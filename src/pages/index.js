@@ -10,9 +10,9 @@ import * as THREE from "three"
 // import { TrackballControls } from "three/examples/jsm/controls/TrackballControls"
 // import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOrientationControls"
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader"
-import { OBJLoader2 } from "three/examples/jsm/loaders/OBJLoader2"
-import { MtlObjBridge } from "three/examples/jsm/loaders/obj2/bridge/MtlObjBridge"
+import { OBJLoader2 } from "three/examples/jsm/loaders/OBJLoader"
 import { graphql } from "gatsby"
+import 'highlight.js/styles/base16/one-light.min.css'
 
 initCustomCard()
 
@@ -82,7 +82,7 @@ OBJLoader2Example.prototype = {
     const onLoadMtl = function(mtlParseResult) {
       objLoader2.setModelName( modelName );
       objLoader2.setLogging(true, true);
-      objLoader2.addMaterials(MtlObjBridge.addMaterialsFromMtlLoader(mtlParseResult), true);
+      objLoader2.setMaterials(mtlParseResult);
       objLoader2.load('./test3.obj', callbackOnLoad, null, null, null);
     };
 
@@ -165,8 +165,8 @@ class LineTension extends Component {
 
   render() {
     return (
-      <div id="lineTensionChart" className={indexStyle.myIndexChart}>
-        <canvas id="myCanvas" className={indexStyle.myCanvas}/>
+      <div id="lineTensionChart" className="myIndexChart">
+        <canvas id="myCanvas" className="myCanvas"/>
       </div>
     )
   }

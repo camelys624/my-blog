@@ -1,9 +1,9 @@
 import React from "react"
-import businessCardStyle from "./index.module.css"
+import "./index.module.css"
 
 export default (props) => {
   return (
-    <div className={businessCardStyle.businessContainer}>
+    <div className="businessContainer">
       {/*<div>*/}
       {/*    <div>*/}
       {/*        <h1>杨升</h1>*/}
