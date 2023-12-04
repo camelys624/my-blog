@@ -1,6 +1,6 @@
 import React from "react"
 import { navigate } from "gatsby"
-import "./index.module.css"
+import "./index.css"
 // import BusinessCard from "../business-card"
 // import dayjs from "dayjs";
 
@@ -26,7 +26,7 @@ export default (props) => {
             <img slot="twitter-pic" src="./20210914_232019.jpg" alt="twitter"/>
           </custom-card>
           : <div role="link" tabIndex="0"
-               className="containerItem"
+               className="container-item"
                onClick={() => {
                  routeTo(node.fields.slug)
                }}

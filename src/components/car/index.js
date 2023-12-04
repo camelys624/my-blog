@@ -5,10 +5,13 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 
+import './index.css'
+
 let camera, scene, renderer
 
 let grid
 let controls
+let container
 
 const wheels = []
 
@@ -30,7 +33,7 @@ const onWindowResize = () => {
 }
 
 const init = () => {
-  const container = document.getElementById("container")
+  container = document.getElementById("container")
 
   renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(window.devicePixelRatio)
@@ -46,6 +49,7 @@ const init = () => {
   camera.position.set(4.25, 1.4, - 4.5)
 
   controls = new OrbitControls(camera, container)
+  controls.enableZoom = false
   controls.maxDistance = 9
   controls.maxPolarAngle = THREE.MathUtils.degToRad(90)
   controls.target.set(0, 0.5, 0)
@@ -53,7 +57,7 @@ const init = () => {
 
   scene = new THREE.Scene()
   scene.background = new THREE.Color(0x333333)
-  scene.environment = new RGBELoader().setPath("textures/equirectangular/venice_sunset_1k.hdr")
+  scene.environment = new RGBELoader().load("./venice_sunset_1k.hdr")
   scene.environment.mapping = THREE.EquirectangularReflectionMapping
   scene.fog = new THREE.Fog(0x333333, 10, 15)
 
@@ -72,6 +76,13 @@ const init = () => {
     clearcoatRoughness: 0.03,
   })
 
+  const detailsMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    metalness: 0.25,
+    roughness: 0,
+    transmission: 1.0
+  })
+
   const glassMaterial = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     metalness: 1.0,
@@ -79,29 +90,29 @@ const init = () => {
   })
 
   const bodyColorInput = document.getElementById("body-color")
-  bodyColorInput.addEventListener("input", function() {
-    bodyMaterial.color.set(this.value)
+  bodyColorInput.addEventListener("input", function(e) {
+    bodyMaterial.color.set(e.target.value)
   })
 
   const detailsColorInput = document.getElementById("details-color")
-  detailsColorInput.addEventListener("input", function() {
-    bodyMaterial.color.set(this.value)
+  detailsColorInput.addEventListener("input", function(e) {
+    detailsMaterial.color.set(e.target.value)
   })
 
   const glassColorInput = document.getElementById("glass-color")
-  glassColorInput.addEventListener("input", function() {
-    glassMaterial.color.set(this.value)
+  glassColorInput.addEventListener("input", function (e) {
+    glassMaterial.color.set(e.target.value)
   })
 
   // Car
-  const shadow = new THREE.TextureLoader().load("models/gltf/ferrari_ao.png")
+  const shadow = new THREE.TextureLoader().load("./ferrari_ao.png")
   const dracoLoader = new DRACOLoader()
-  dracoLoader.setDecoderPath("js/libs/draco/gltf/")
+  dracoLoader.setDecoderPath("libs/")
 
   const loader = new GLTFLoader()
   loader.setDRACOLoader(dracoLoader)
 
-  loader.load("models/gltf/ferrari.glb", function(gltf) {
+  loader.load("./ferrari.glb", function(gltf) {
     const carModel = gltf.scene.children[0]
     carModel.getObjectByName("body").material = bodyMaterial
 
@@ -122,7 +133,7 @@ const init = () => {
 
     // shadow
     const mesh = new THREE.Mesh(
-      new THREE.PlaneBufferGeometry(0.655 * 4, 1.3 * 4),
+      new THREE.PlaneGeometry(0.655 * 4, 1.3 * 4),
       new THREE.MeshBasicMaterial({
         map: shadow,
         blending: THREE.MultiplyBlending,
@@ -138,18 +149,18 @@ const init = () => {
   })
 }
 
-export function Car3D() {
+export default function Car3D() {
   useEffect(() => {
     init()
   }, [])
 
-  return (<>
+  return (<div className="carContainer">
     <div id="info">
-      <span class="colorPicker"><input id="body-color" type="color" value="#ff0000"></input><br/>Body</span>
-			<span class="colorPicker"><input id="details-color" type="color" value="#ffffff"></input><br/>Details</span>
-			<span class="colorPicker"><input id="glass-color" type="color" value="#ffffff"></input><br/>Glass</span>
+      <span className="colorPicker"><input id="body-color" type="color" value="#ff0000"></input><br/>Body</span>
+			<span className="colorPicker"><input id="details-color" type="color" value="#ffffff"></input><br/>Details</span>
+			<span className="colorPicker"><input id="glass-color" type="color" value="#ffffff"></input><br/>Glass</span>
     </div>
-    <div id="container"></div>
-  </>
+    <div id="container" style={{height: '500px'}}></div>
+  </div>
   )
 }

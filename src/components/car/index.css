@@ -1,0 +1,15 @@
+.colorPicker {
+    display: inline-block;
+    margin: 0 10px;
+}
+
+.carContainer {
+    margin-top: 72px;
+}
+
+.carContainer #info {
+    display: flex;
+    justify-content: center;
+    color: #bbbbbb;
+    background: #333333;
+}
