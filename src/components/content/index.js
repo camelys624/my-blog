@@ -20,7 +20,7 @@ export default (props) => {
         data.allMarkdownRemark.edges.map(({ node }) => node.frontmatter.resume
           ? <custom-card role="link" tabIndex="0" onClick={() => {routeTo(node.fields.slug)}} onKeyDown={() => {}} key={node.id}>
             <h1 slot="person-name" data-job="front-end developer" className="personName">杨升</h1>
-            <span slot="phone">15922835412</span>
+            <span slot="phone">15520039339</span>
             <span slot="email">camel_yangz@163.com</span>
             <img slot="wechat-pic" src="./mmqrcode1631632704399.png" alt="wechat"/>
             <img slot="twitter-pic" src="./20210914_232019.jpg" alt="twitter"/>
